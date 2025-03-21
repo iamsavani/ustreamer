@@ -55,6 +55,9 @@ static const struct {
 	{"M2M-JPEG",	US_ENCODER_TYPE_M2M_IMAGE},
 	{"OMX",			US_ENCODER_TYPE_M2M_IMAGE},
 	{"NOOP",		US_ENCODER_TYPE_CPU},
+	#ifdef WITH_LIBX264
+	{"LIBX264-VIDEO",		US_ENCODER_TYPE_LIBX264_VIDEO},
+	#endif
 };
 
 
@@ -224,7 +227,14 @@ static bool _worker_run_job(us_worker_s *wr) {
 		if (us_m2m_encoder_compress(run->m2ms[wr->number], src, dest, false) < 0) {
 			goto error;
 		}
-
+	#ifdef WITH_LIBX264
+	} else if (run->type == US_ENCODER_TYPE_LIBX264_VIDEO) {
+			US_LOG_VERBOSE("Compressing RAW or JPEG to H.264 using LIBX264: worker=%s, buffer=%u",
+				wr->name, job->hw->buf.index);
+			US_LOG_VERBOSE("Compressing JPEG using CPU: worker=%s, buffer=%u",
+				wr->name, job->hw->buf.index);
+			us_cpu_encoder_compress(src, dest, run->quality);
+	#endif
 	} else {
 		assert(0 && "Unknown encoder type");
 	}

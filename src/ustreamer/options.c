@@ -100,6 +100,9 @@ enum _US_OPT_VALUES {
 	_O_H264_BITRATE,
 	_O_H264_GOP,
 	_O_H264_M2M_DEVICE,
+	#	ifdef WITH_LIBX264
+		_O_H264_PRESET,
+	#	endif
 #	undef ADD_SINK
 
 #	ifdef WITH_V4P
@@ -205,6 +208,9 @@ static const struct option _LONG_OPTS[] = {
 	{"h264-bitrate",			required_argument,	NULL,	_O_H264_BITRATE},
 	{"h264-gop",				required_argument,	NULL,	_O_H264_GOP},
 	{"h264-m2m-device",			required_argument,	NULL,	_O_H264_M2M_DEVICE},
+	#	ifdef WITH_LIBX264
+		{"h264-preset",			required_argument,	NULL,	_O_H264_PRESET},
+	#	endif
 	// Compatibility
 	{"sink",					required_argument,	NULL,	_O_JPEG_SINK},
 	{"sink-mode",				required_argument,	NULL,	_O_JPEG_SINK_MODE},
@@ -400,7 +406,9 @@ int options_parse(us_options_s *options, us_capture_s *cap, us_encoder_s *enc, u
 			case _O_DEVICE_TIMEOUT:		OPT_NUMBER("--device-timeout", cap->timeout, 1, 60, 0);
 			case _O_DEVICE_ERROR_DELAY:	OPT_NUMBER("--device-error-delay", stream->error_delay, 1, 60, 0);
 			case _O_M2M_DEVICE:			OPT_SET(enc->m2m_path, optarg);
-
+			#	ifdef WITH_LIBX264
+			case _O_H264_PRESET:		OPT_SET(stream->h264_preset, optarg);
+			#	endif
 			case _O_IMAGE_DEFAULT:
 				OPT_CTL_DEFAULT_NOBREAK(brightness);
 				OPT_CTL_DEFAULT_NOBREAK(contrast);
@@ -611,6 +619,12 @@ static void _features(void) {
 	puts("- WITH_SYSTEMD");
 #	endif
 
+#	ifdef WITH_LIBX264
+	puts("+ WITH_LIBX264");
+#	else
+	puts("- WITH_LIBX264");
+#	endif
+
 #	ifdef MK_WITH_PTHREAD_NP
 	puts("+ WITH_PTHREAD_NP");
 #	else
@@ -675,6 +689,10 @@ static void _help(FILE *fp, const us_capture_s *cap, const us_encoder_s *enc, co
 	SAY("                                             * HW  ───────── Use pre-encoded MJPEG frames directly from camera hardware;");
 	SAY("                                             * M2M-VIDEO  ── GPU-accelerated MJPEG encoding using V4L2 M2M video interface;");
 	SAY("                                             * M2M-IMAGE  ── GPU-accelerated JPEG encoding using V4L2 M2M image interface.\n");
+	SAY("                                             * M2M-IMAGE  ── GPU-accelerated JPEG encoding using V4L2 M2M image interface.");
+#	ifdef WITH_LIBX264
+	SAY("                                             * LIBX264-VIDEO  ── Software H.264 encoding using libx264.\n");
+#	endif
 	SAY("    -g|--glitched-resolutions <WxH,...>  ─ It doesn't do anything. Still here for compatibility.\n");
 	SAY("    -k|--blank <path>  ─────────────────── It doesn't do anything. Still here for compatibility.\n");
 	SAY("    -K|--last-as-blank <sec>  ──────────── It doesn't do anything. Still here for compatibility.\n");
@@ -743,6 +761,9 @@ static void _help(FILE *fp, const us_capture_s *cap, const us_encoder_s *enc, co
 	SAY("    --h264-bitrate <kbps>  ───────── H264 bitrate in Kbps. Default: %u.\n", stream->h264_bitrate);
 	SAY("    --h264-gop <N>  ──────────────── Interval between keyframes. Default: %u.\n", stream->h264_gop);
 	SAY("    --h264-m2m-device </dev/path>  ─ Path to V4L2 M2M encoder device. Default: auto select.\n");
+#	ifdef WITH_LIBX264
+	SAY("    --h264-preset <string>  ───────── X264 encoder preset. Default: ultrafast.\n");
+#	endif
 #	ifdef WITH_V4P
 	SAY("Passthrough options for PiKVM V4:");
 	SAY("═════════════════════════════════");

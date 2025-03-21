@@ -34,6 +34,7 @@ MK_WITH_SYSTEMD = $(call optbool,$(WITH_SYSTEMD))
 MK_WITH_PTHREAD_NP = $(call optbool,$(WITH_PTHREAD_NP))
 MK_WITH_SETPROCTITLE = $(call optbool,$(WITH_SETPROCTITLE))
 MK_WITH_PDEATHSIG = $(call optbool,$(WITH_PDEATHSIG))
+MK_WITH_LIBX264 = $(call optbool,$(WITH_LIBX264))
 
 export
 

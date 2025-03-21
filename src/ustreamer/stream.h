@@ -33,6 +33,9 @@
 #include "../libs/memsink.h"
 #include "../libs/capture.h"
 #include "../libs/fpsi.h"
+#ifdef WITH_LIBX264
+#include <x264.h>
+#endif
 #ifdef WITH_V4P
 #	include "../libs/drm/drm.h"
 #endif
@@ -41,6 +44,9 @@
 #include "encoder.h"
 #include "m2m.h"
 
+#ifdef WITH_LIBX264
+#	include "encoders/libx264/libx264.h"
+#endif
 
 typedef struct {
 #	ifdef WITH_V4P
@@ -62,6 +68,9 @@ typedef struct {
 	us_stream_http_s	*http;
 
 	us_m2m_encoder_s	*h264_enc;
+	#ifdef WITH_LIBX264
+		us_libx264_encoder_s libx264_enc;
+	#endif
 	us_frame_s			*h264_tmp_src;
 	us_frame_s			*h264_dest;
 	bool				h264_key_requested;
@@ -89,7 +98,9 @@ typedef struct {
 	uint			h264_bitrate;
 	uint			h264_gop;
 	char			*h264_m2m_path;
-
+	#	ifdef WITH_LIBX264
+	char			*h264_preset;
+#	endif
 #	ifdef WITH_V4P
 	us_drm_s		*drm;
 #	endif
